@@ -668,7 +668,7 @@ def _get_provinces_geojson():
         return _json.loads(_path.read_text(encoding="utf-8"))
     return None
 
-tab1, tab2, tab3, tab4 = st.tabs(["Ranking", "Evolución temporal", "BEV Share", "Comunidades"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["Ranking", "Evolución temporal", "BEV Share", "Comunidades", "Acerca de"])
 
 # ── TAB 1: Paretos + Treemaps + Desglose ───────────────────────────────────
 with tab1:
@@ -746,13 +746,6 @@ with tab1:
             for k, v in sorted(_stats_prop.items(), key=lambda x: -x[1])
         ])
         st.dataframe(resumen, use_container_width=True, hide_index=True)
-        csv = resumen.to_csv(index=False).encode("utf-8")
-        st.download_button(
-            "Descargar CSV",
-            data=csv,
-            file_name=f"propulsion_{fecha_inicio}_{fecha_fin}.csv",
-            mime="text/csv",
-        )
 
 # ── TAB 2: Evolución temporal por marca / modelo ───────────────────────────
 with tab2:
@@ -1231,6 +1224,73 @@ with tab4:
                     margin=dict(t=60, b=80, l=60, r=20),
                 )
                 st.plotly_chart(fig_ccaa, use_container_width=True)
+
+# ── TAB 5: Acerca de ───────────────────────────────────────────────────────
+with tab5:
+    st.markdown("""
+### ⚡ Matriculaciones EV España
+
+*Dashboard interactivo para seguir la adopción del vehículo eléctrico en España — datos oficiales de la DGT*
+
+---
+
+#### Por qué existe esto
+
+Seguía los análisis de [@todoselectricos](https://x.com/todoselectricos) con mucho interés. Un día vi que los
+gráficos de matriculaciones se construían a mano cada mes. Pensé: *los datos de la DGT son públicos,
+¿se puede automatizar esto por completo?*
+
+Este proyecto es la respuesta. Descarga automáticamente los microdatos oficiales de la DGT, los agrega
+y los convierte en visualizaciones interactivas — sin intervención manual, sin suscripción, sin registro.
+
+---
+
+#### Cómo funciona
+
+```
+DGT (dgt.es)  →  GitHub Actions (04:00 UTC)  →  GitHub Release  →  este dashboard  →  tú ⚡
+```
+
+Cada noche un workflow automático descarga los datos más recientes de la DGT, actualiza la base de datos
+y la publica en GitHub Releases. Al abrir el dashboard, los datos ya están frescos.
+
+---
+
+#### Contribuir
+
+Las contribuciones son bienvenidas:
+
+- **Issues** para reportar errores o proponer nuevas visualizaciones
+- **Pull requests** para mejoras de código o nuevas pestañas
+- **Llamada especial a quienes siguen estos datos a mano**: si encuentras alguna cifra que no cuadra,
+  abre un issue — tu ojo crítico tiene mucho valor y queda registrado en los créditos
+
+Código en [github.com/literato1987/dgt-matriculaciones](https://github.com/literato1987/dgt-matriculaciones)
+
+---
+
+#### Créditos
+
+**Creado por** Juan Clavel — [@rote_nelke](https://x.com/rote_nelke) en X · [@literato1987](https://github.com/literato1987) en GitHub
+
+**Inspiración original**: [@todoselectricos](https://x.com/todoselectricos) (Luiz Valdés)
+
+**Inspiración de visualizaciones**: [@electric_nick_](https://x.com/electric_nick_)
+
+**Fuente de datos**: Dirección General de Tráfico (DGT), Ministerio del Interior de España.
+Microdatos de dominio público disponibles en [dgt.es](https://www.dgt.es).
+
+**Licencia**: MIT — úsalo, fórkalo, mejóralo.
+
+---
+
+#### ☕ Apoya el proyecto
+
+Este proyecto es gratuito y seguirá siéndolo. Si te resulta útil y quieres ayudar a mantener
+el servidor cuando escale, puedes invitarme a un café.
+
+[![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/juanclavel)
+""")
 
 # ── Footer ─────────────────────────────────────────────────────────────────
 st.caption(
