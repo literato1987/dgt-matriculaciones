@@ -14,7 +14,7 @@
 
 ## Por qué existe esto
 
-Seguía los análisis de [@todoselectricos](https://bsky.app/profile/luisvaldes.bsky.social) con mucho interés. Un día vi [este hilo en X](https://x.com/joseantonio_qr/status/2030328421323067626?s=20) donde quedaba claro que los gráficos de matriculaciones se construían a mano cada mes. Pensé: *los datos de la DGT son públicos, ¿se puede automatizar esto por completo?*
+Seguía con mucho interés los análisis de ventas de [Luis Valdés](https://bsky.app/profile/luisvaldes.bsky.social) en su canal [Todos Eléctricos](https://x.com/todoselectricos). Un día vi [este hilo en X](https://x.com/joseantonio_qr/status/2030328421323067626?s=20) donde quedaba claro que los gráficos de matriculaciones se construían a mano cada mes. Pensé: *los datos de la DGT son públicos, ¿se puede automatizar esto por completo?*
 
 Este proyecto es la respuesta. Descarga automáticamente los microdatos oficiales de la DGT, los agrega y los convierte en visualizaciones interactivas — sin intervención manual, sin suscripción, sin registro.
 
@@ -93,6 +93,8 @@ Todos los colaboradores aparecen en este README con enlace a su perfil.
 ## Créditos e inspiración
 
 **Creado por** Juan Clavel — [@rote_nelke](https://x.com/rote_nelke) en X · [@literato1987](https://github.com/literato1987) en GitHub
+
+**Inspiración original**: [Luis Valdés](https://bsky.app/profile/luisvaldes.bsky.social) · canal [Todos Eléctricos](https://x.com/todoselectricos) — sus análisis semanales de ventas demostraron que había una comunidad que seguía estos datos con atención. Ver que se hacía a mano fue el detonante de este proyecto.
 
 **Inspiración de visualizaciones**: [@electric_nick_](https://x.com/electric_nick_) — referencia para el estilo y tipo de gráficos del dashboard.
 
