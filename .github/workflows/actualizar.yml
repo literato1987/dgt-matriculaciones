@@ -1,0 +1,44 @@
+name: Actualizar datos DGT
+
+on:
+  schedule:
+    - cron: '0 4 * * *'   # 04:00 UTC cada día (06:00 hora España)
+  workflow_dispatch:        # permite lanzarlo manualmente desde GitHub
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # necesario para subir assets a releases
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Actualizar DB cloud
+        id: update
+        run: |
+          python update_cloud_db.py --meses 3
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Subir DB actualizada a GitHub Release
+        if: steps.update.outputs.exit_code == '0'
+        run: |
+          gh release upload v1.0.0 datos_dgt_cloud.db --clobber
+          echo "DB subida correctamente"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sin cambios nuevos
+        if: steps.update.outputs.exit_code == '2'
+        run: echo "No hay datos nuevos, no se sube nada."
