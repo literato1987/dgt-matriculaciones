@@ -1202,16 +1202,15 @@ with tab4:
                 fig_ccaa = go.Figure()
                 for i, ccaa in enumerate(df_evol_pivot.columns):
                     color = _TREEMAP_COLORS[i % len(_TREEMAP_COLORS)]
-                    fig_ccaa.add_trace(go.Scatter(
+                    fig_ccaa.add_trace(go.Bar(
                         x=df_evol_pivot.index.tolist(),
                         y=df_evol_pivot[ccaa].round(2).tolist(),
                         name=ccaa,
-                        mode="lines+markers",
-                        line=dict(color=color, width=2),
-                        marker=dict(size=4),
+                        marker_color=color,
                     ))
 
                 fig_ccaa.update_layout(
+                    barmode="group",
                     title=dict(
                         text=f"Evolución cuota BEV (%) por CCAA · {fecha_txt}",
                         font=dict(size=14, color=TEXT), x=0.01,
@@ -1233,12 +1232,13 @@ with tab4:
                     legend=dict(
                         font=dict(color=TEXT, size=10),
                         bgcolor="rgba(0,0,0,0)",
-                        orientation="v",
+                        orientation="h",
+                        y=-0.2,
                     ),
                     plot_bgcolor=BG_PLOT,
                     paper_bgcolor=BG,
                     height=560,
-                    margin=dict(t=60, b=80, l=60, r=20),
+                    margin=dict(t=60, b=100, l=60, r=20),
                 )
                 st.plotly_chart(fig_ccaa, use_container_width=True)
 
