@@ -14,7 +14,7 @@
 
 ## Por qué existe esto
 
-Seguía los análisis de [@todoselectricos](https://x.com/todoselectricos) con mucho interés. En uno de sus posts vi que los gráficos de matriculaciones se construían a mano cada mes. Pensé: *los datos de la DGT son públicos, ¿se puede automatizar esto por completo?*
+Seguía los análisis de ventas de [@todoselectricos](https://x.com/todoselectricos) con https://bsky.app/profile/luisvaldes.bsky.social con mucho interés. Pero el otro día leyendo este post https://x.com/joseantonio_qr/status/2030328421323067626?s=20 vi que los gráficos de matriculaciones se construían a mano cada mes. Pensé: *los datos de la DGT son públicos, ¿se puede automatizar esto por completo?*
 
 Este proyecto es la respuesta. Descarga automáticamente los microdatos oficiales de la DGT, los agrega y los convierte en visualizaciones interactivas — sin intervención manual, sin suscripción, sin registro.
 
@@ -94,8 +94,6 @@ Todos los colaboradores aparecen en este README con enlace a su perfil.
 
 **Creado por** Juan Clavel — [@rote_nelke](https://x.com/rote_nelke) en X · [@literato1987](https://github.com/literato1987) en GitHub
 
-**Inspiración original**: [@todoselectricos](https://x.com/todoselectricos) (Luiz Valdés) — sus análisis semanales sobre el mercado eléctrico español demostraron que había una comunidad que seguía estos datos con atención. Ver cómo se hacía a mano fue el detonante de este proyecto.
-
 **Inspiración de visualizaciones**: [@electric_nick_](https://x.com/electric_nick_) — referencia para el estilo y tipo de gráficos del dashboard.
 
 **Fuente de datos**: Dirección General de Tráfico (DGT), Ministerio del Interior de España. Los microdatos de matriculaciones son de dominio público y están disponibles en [dgt.es](https://www.dgt.es).
@@ -106,7 +104,7 @@ Todos los colaboradores aparecen en este README con enlace a su perfil.
 
 ## ☕ Apoya el proyecto
 
-Este proyecto es gratuito y seguirá siéndolo. Si te resulta útil y quieres ayudar a mantener el servidor cuando escale, puedes invitarme a un café — cada aportación va directamente a infraestructura.
+Este proyecto es gratuito y seguirá siéndolo. Si te resulta útil y quieres ayudar a mantener el servidor cuando escale, puedes invitarme a un café — cada aportación ayudará a mantener la infraestructura.
 
 [![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/juanclavel)
 
