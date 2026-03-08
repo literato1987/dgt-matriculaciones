@@ -209,11 +209,12 @@ def pareto_chart(serie: pd.Series, titulo: str, eje_x: str, top_n: int, preagreg
     else:
         conteo = serie.value_counts().head(top_n).reset_index()
         conteo.columns = ["categoria", "unidades"]
-    # Horizontal: menor arriba → mayor abajo visualmente (ascending=True para barh)
-    conteo = conteo.sort_values("unidades", ascending=True).reset_index(drop=True)
-
+    # Calcular cumsum en orden descendente (Pareto: el mayor acumula primero)
+    conteo = conteo.sort_values("unidades", ascending=False).reset_index(drop=True)
     total = conteo["unidades"].sum()
     conteo["acumulado_pct"] = conteo["unidades"].cumsum() / total * 100
+    # Invertir para que el mayor quede arriba en el gráfico horizontal
+    conteo = conteo.iloc[::-1].reset_index(drop=True)
 
     fig = go.Figure()
 
