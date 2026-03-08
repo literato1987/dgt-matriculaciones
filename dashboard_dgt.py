@@ -412,13 +412,17 @@ with st.sidebar:
         cargar = st.button("Actualizar datos", type="primary", use_container_width=True)
 
     st.divider()
-    st.markdown(
-        "[![Visitas](https://hits.seeyoufarm.com/api/count/incr/badge.svg"
-        "?url=https%3A%2F%2Fliterato1987-dgt-matriculaciones.streamlit.app"
-        "&count_bg=%2366bb6a&title_bg=%23333333&title=visitas&edge_flat=true)]"
-        "(https://literato1987-dgt-matriculaciones.streamlit.app)",
-        unsafe_allow_html=False,
-    )
+    if "visitas" not in st.session_state:
+        try:
+            import requests as _req
+            _r = _req.get(
+                "https://api.counterapi.dev/v1/dgt-matriculaciones/views/up",
+                timeout=3,
+            )
+            st.session_state["visitas"] = _r.json().get("count", "—")
+        except Exception:
+            st.session_state["visitas"] = "—"
+    st.caption(f"👁 {st.session_state['visitas']:,} visitas" if isinstance(st.session_state["visitas"], int) else f"👁 visitas: {st.session_state['visitas']}")
 
 # ── Lógica de carga ────────────────────────────────────────────────────────
 if fecha_inicio > fecha_fin:
