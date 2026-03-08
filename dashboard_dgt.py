@@ -530,12 +530,13 @@ if CLOUD:
         conn, params=_cm_params,
     )
     _df_mo = pd.read_sql_query(
-        f"SELECT modelo, SUM(n) AS n FROM resumen_marca WHERE {_cm_where} AND modelo != '' "
-        "GROUP BY modelo ORDER BY n DESC",
+        f"SELECT marca || ' ' || modelo AS modelo_completo, SUM(n) AS n "
+        f"FROM resumen_marca WHERE {_cm_where} AND modelo != '' AND marca != '' "
+        "GROUP BY marca, modelo ORDER BY n DESC",
         conn, params=_cm_params,
     )
-    marcas_s  = _df_m.set_index("marca")["n"]    if not _df_m.empty else pd.Series(dtype=int)
-    modelos_s = _df_mo.set_index("modelo")["n"]  if not _df_mo.empty else pd.Series(dtype=int)
+    marcas_s  = _df_m.set_index("marca")["n"]             if not _df_m.empty  else pd.Series(dtype=int)
+    modelos_s = _df_mo.set_index("modelo_completo")["n"]  if not _df_mo.empty else pd.Series(dtype=int)
 
     if marcas_s.empty:
         st.info("No hay datos para este rango en la DB cloud.")
@@ -694,7 +695,8 @@ with tab1:
         _preag  = True
     else:
         marcas  = df["MarcaItv"].dropna().replace("", pd.NA).dropna()
-        modelos = df["ModeloItv"].dropna().replace("", pd.NA).dropna()
+        _df_mod = df[["MarcaItv", "ModeloItv"]].dropna().replace("", pd.NA).dropna()
+        modelos = (_df_mod["MarcaItv"] + " " + _df_mod["ModeloItv"])
         _preag  = False
 
     col_a, col_b = st.columns(2)
