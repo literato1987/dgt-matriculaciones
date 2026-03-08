@@ -20,6 +20,8 @@ Este proyecto es la respuesta. Descarga automáticamente los microdatos oficiale
 
 Los datos llevan años disponibles en [dgt.es](https://www.dgt.es) en forma de ficheros ZIP, pero sin ninguna herramienta visual que los haga útiles para el ciudadano. Este dashboard cierra ese hueco.
 
+Aunque el foco está en los vehículos eléctricos, los microdatos de la DGT cubren **todos los tipos de propulsión** — híbridos, gasolina, diésel, gas — y también motos, furgonetas y otros tipos de vehículo. Todo eso está disponible en los filtros.
+
 ---
 
 ## Qué puedes ver

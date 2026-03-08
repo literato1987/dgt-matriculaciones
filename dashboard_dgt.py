@@ -1245,6 +1245,10 @@ donde quedaba claro que los gráficos de matriculaciones se construían a mano c
 Este proyecto es la respuesta. Descarga automáticamente los microdatos oficiales de la DGT, los agrega
 y los convierte en visualizaciones interactivas — sin intervención manual, sin suscripción, sin registro.
 
+Aunque el foco está en los vehículos eléctricos, los microdatos de la DGT cubren **todos los tipos de
+propulsión** — híbridos, gasolina, diésel, gas — y también motos, furgonetas y otros tipos de vehículo.
+Todo eso está disponible en los filtros de la barra lateral.
+
 ---
 
 #### Cómo funciona
