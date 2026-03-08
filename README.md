@@ -108,7 +108,7 @@ Todos los colaboradores aparecen en este README con enlace a su perfil.
 
 Este proyecto es gratuito y seguirá siéndolo. Si te resulta útil y quieres ayudar a mantener el servidor cuando escale, puedes invitarme a un café — cada aportación va directamente a infraestructura.
 
-[![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/PLACEHOLDER)
+[![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/juanclavel)
 
 ---
 
