@@ -897,11 +897,9 @@ with tab3:
     if df_share.empty:
         st.info("No hay datos para este rango. Descarga datos primero.")
     else:
-        # Clasificar propulsiones en 4 grupos
+        # Clasificar propulsiones en 2 grupos (BEV vs resto)
         def _grupo_prop(cod):
             if cod == "2":   return "BEV"
-            if cod == "3":   return "PHEV"
-            if cod == "6":   return "Híbrido"
             return "No-EV"
 
         df_share["grupo"] = df_share["cod_propulsion"].apply(_grupo_prop)
@@ -912,30 +910,20 @@ with tab3:
             .pivot(index="periodo", columns="grupo", values="n")
             .fillna(0)
         )
-        # Asegurar que siempre existen las cuatro columnas
-        for col in ["BEV", "PHEV", "Híbrido", "No-EV"]:
+        for col in ["BEV", "No-EV"]:
             if col not in df_agg.columns:
                 df_agg[col] = 0
 
-        df_agg["total"] = df_agg["BEV"] + df_agg["PHEV"] + df_agg["Híbrido"] + df_agg["No-EV"]
+        df_agg["total"] = df_agg["BEV"] + df_agg["No-EV"]
         df_agg["bev_pct"] = df_agg["BEV"] / df_agg["total"].replace(0, 1) * 100
 
         periodos = df_agg.index.tolist()
 
         fig_share = go.Figure()
 
-        # Barras apiladas (de menos a más electrificado)
         fig_share.add_trace(go.Bar(
             x=periodos, y=df_agg["No-EV"].tolist(),
             name="No-EV", marker_color="#ffa726", yaxis="y1",
-        ))
-        fig_share.add_trace(go.Bar(
-            x=periodos, y=df_agg["Híbrido"].tolist(),
-            name="Híbrido (HEV)", marker_color="#26c6da", yaxis="y1",
-        ))
-        fig_share.add_trace(go.Bar(
-            x=periodos, y=df_agg["PHEV"].tolist(),
-            name="PHEV (enchufable)", marker_color="#ab47bc", yaxis="y1",
         ))
         fig_share.add_trace(go.Bar(
             x=periodos, y=df_agg["BEV"].tolist(),
@@ -995,8 +983,8 @@ with tab3:
 
         # Tabla resumen por período
         with st.expander("Ver datos"):
-            df_tabla = df_agg[["BEV", "PHEV", "Híbrido", "No-EV", "total", "bev_pct"]].copy()
-            df_tabla.columns = ["BEV", "PHEV (enchufable)", "Híbrido (HEV)", "No-EV", "Total", "BEV Share %"]
+            df_tabla = df_agg[["BEV", "No-EV", "total", "bev_pct"]].copy()
+            df_tabla.columns = ["BEV", "No-EV", "Total", "BEV Share %"]
             df_tabla["BEV Share %"] = df_tabla["BEV Share %"].round(1)
             st.dataframe(df_tabla, use_container_width=True)
 
@@ -1289,6 +1277,10 @@ Las contribuciones son bienvenidas:
 - **Pull requests** para mejoras de código o nuevas pestañas
 - **Llamada especial a quienes siguen estos datos a mano**: si encuentras alguna cifra que no cuadra,
   abre un issue — tu ojo crítico tiene mucho valor y queda registrado en los créditos
+
+**Área abierta a colaboración**: la distinción entre híbridos enchufables (PHEV) e híbridos convencionales (HEV)
+en los datos de la DGT no es trivial — los códigos de propulsión tienen inconsistencias históricas.
+Si conoces bien esta clasificación y quieres mejorar el gráfico de cuotas, abre un issue o un PR.
 
 Código en [github.com/literato1987/dgt-matriculaciones](https://github.com/literato1987/dgt-matriculaciones)
 

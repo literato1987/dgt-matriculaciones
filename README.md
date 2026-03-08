@@ -88,6 +88,8 @@ Las contribuciones son bienvenidas en cualquier forma:
 
 **Llamada especial a quienes siguen estos datos de forma manual**: si encuentras alguna cifra que no cuadra con lo que ves en otras fuentes, abre un issue. Tu ojo crítico tiene mucho valor para mejorar la fiabilidad del proyecto, y queda registrado tu nombre en los créditos.
 
+**Área abierta a colaboración — clasificación HEV/PHEV**: la distinción entre híbridos enchufables (PHEV) e híbridos convencionales (HEV) en los microdatos de la DGT tiene inconsistencias históricas en los códigos de propulsión. Si conoces bien esta clasificación y quieres mejorar el gráfico de cuotas, abre un issue o un PR.
+
 Todos los colaboradores aparecen en este README con enlace a su perfil.
 
 ---
