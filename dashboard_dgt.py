@@ -410,6 +410,15 @@ with st.sidebar:
         st.caption(f"BD local: {_n_total():,} registros almacenados")
         cargar = st.button("Actualizar datos", type="primary", use_container_width=True)
 
+    st.divider()
+    st.markdown(
+        "[![Visitas](https://hits.seeyoufarm.com/api/count/incr/badge.svg"
+        "?url=https%3A%2F%2Fliterato1987-dgt-matriculaciones.streamlit.app"
+        "&count_bg=%2366bb6a&title_bg=%23333333&title=visitas&edge_flat=true)]"
+        "(https://literato1987-dgt-matriculaciones.streamlit.app)",
+        unsafe_allow_html=False,
+    )
+
 # ── Lógica de carga ────────────────────────────────────────────────────────
 if fecha_inicio > fecha_fin:
     st.error("La fecha de inicio debe ser anterior a la fecha de fin.")
@@ -883,10 +892,11 @@ with tab3:
     if df_share.empty:
         st.info("No hay datos para este rango. Descarga datos primero.")
     else:
-        # Clasificar propulsiones en 3 grupos
+        # Clasificar propulsiones en 4 grupos
         def _grupo_prop(cod):
             if cod == "2":   return "BEV"
             if cod == "3":   return "PHEV"
+            if cod == "6":   return "Híbrido"
             return "No-EV"
 
         df_share["grupo"] = df_share["cod_propulsion"].apply(_grupo_prop)
@@ -897,26 +907,30 @@ with tab3:
             .pivot(index="periodo", columns="grupo", values="n")
             .fillna(0)
         )
-        # Asegurar que siempre existen las tres columnas
-        for col in ["BEV", "PHEV", "No-EV"]:
+        # Asegurar que siempre existen las cuatro columnas
+        for col in ["BEV", "PHEV", "Híbrido", "No-EV"]:
             if col not in df_agg.columns:
                 df_agg[col] = 0
 
-        df_agg["total"] = df_agg["BEV"] + df_agg["PHEV"] + df_agg["No-EV"]
+        df_agg["total"] = df_agg["BEV"] + df_agg["PHEV"] + df_agg["Híbrido"] + df_agg["No-EV"]
         df_agg["bev_pct"] = df_agg["BEV"] / df_agg["total"].replace(0, 1) * 100
 
         periodos = df_agg.index.tolist()
 
         fig_share = go.Figure()
 
-        # Barras apiladas
+        # Barras apiladas (de menos a más electrificado)
         fig_share.add_trace(go.Bar(
             x=periodos, y=df_agg["No-EV"].tolist(),
             name="No-EV", marker_color="#ffa726", yaxis="y1",
         ))
         fig_share.add_trace(go.Bar(
+            x=periodos, y=df_agg["Híbrido"].tolist(),
+            name="Híbrido (HEV)", marker_color="#26c6da", yaxis="y1",
+        ))
+        fig_share.add_trace(go.Bar(
             x=periodos, y=df_agg["PHEV"].tolist(),
-            name="PHEV", marker_color="#ab47bc", yaxis="y1",
+            name="PHEV (enchufable)", marker_color="#ab47bc", yaxis="y1",
         ))
         fig_share.add_trace(go.Bar(
             x=periodos, y=df_agg["BEV"].tolist(),
@@ -976,8 +990,8 @@ with tab3:
 
         # Tabla resumen por período
         with st.expander("Ver datos"):
-            df_tabla = df_agg[["BEV", "PHEV", "No-EV", "total", "bev_pct"]].copy()
-            df_tabla.columns = ["BEV", "PHEV", "No-EV", "Total", "BEV Share %"]
+            df_tabla = df_agg[["BEV", "PHEV", "Híbrido", "No-EV", "total", "bev_pct"]].copy()
+            df_tabla.columns = ["BEV", "PHEV (enchufable)", "Híbrido (HEV)", "No-EV", "Total", "BEV Share %"]
             df_tabla["BEV Share %"] = df_tabla["BEV Share %"].round(1)
             st.dataframe(df_tabla, use_container_width=True)
 
