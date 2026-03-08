@@ -1093,9 +1093,17 @@ with tab4:
 
         st.divider()
 
-        # ── 2. Treemap: ventas totales por CCAA ────────────────────────────
+        # ── 2. Treemap: matriculaciones por CCAA (respeta filtro de propulsión) ──
+        _df_tm = pd.read_sql_query(
+            f"""SELECT cod_provincia, {_share_count} AS n
+                FROM {_share_table}
+                WHERE {_cm_where} AND cod_provincia != ''
+                GROUP BY cod_provincia""",
+            conn, params=_cm_params,
+        )
+        _df_tm["ccaa"] = _df_tm["cod_provincia"].astype(str).str.strip().map(_PROV_CCAA)
         df_ccaa_total = (
-            df_prov_map.dropna(subset=["ccaa"])
+            _df_tm.dropna(subset=["ccaa"])
             .groupby("ccaa")["n"].sum()
             .reset_index()
             .sort_values("n", ascending=False)
@@ -1114,7 +1122,7 @@ with tab4:
             ))
             fig_tm_ccaa.update_layout(
                 title=dict(
-                    text=f"Matriculaciones totales por CCAA · {fecha_txt}",
+                    text=f"Matriculaciones por CCAA · {fecha_txt}{filtro_txt}",
                     font=dict(size=14, color=TEXT), x=0.01,
                 ),
                 paper_bgcolor=BG,
