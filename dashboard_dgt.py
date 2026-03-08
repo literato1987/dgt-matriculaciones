@@ -1236,8 +1236,9 @@ with tab5:
 
 #### Por qué existe esto
 
-Seguía los análisis de [@todoselectricos](https://x.com/todoselectricos) con mucho interés. Un día vi que los
-gráficos de matriculaciones se construían a mano cada mes. Pensé: *los datos de la DGT son públicos,
+Seguía los análisis de [@todoselectricos](https://bsky.app/profile/luisvaldes.bsky.social) con mucho interés.
+Un día vi [este hilo en X](https://x.com/joseantonio_qr/status/2030328421323067626?s=20) donde quedaba claro
+que los gráficos de matriculaciones se construían a mano cada mes. Pensé: *los datos de la DGT son públicos,
 ¿se puede automatizar esto por completo?*
 
 Este proyecto es la respuesta. Descarga automáticamente los microdatos oficiales de la DGT, los agrega
