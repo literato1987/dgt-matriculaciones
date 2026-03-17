@@ -135,10 +135,10 @@ def actualizar(n_meses: int = 3):
         agg_prov  = defaultdict(int)
 
         for r in registros:
-            fecha_r = r.get("FecMatricula", "")
-            if not fecha_r or len(fecha_r) != 8:
+            fec = r.get("_fecha")
+            if fec is None:
                 continue
-            mes_r = f"{fecha_r[:4]}-{fecha_r[4:6]}"
+            mes_r = fec.strftime("%Y-%m")
             if mes_r != clave_mes:
                 continue
 

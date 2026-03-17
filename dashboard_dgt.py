@@ -403,6 +403,19 @@ with st.sidebar:
     if CLOUD:
         _meta = dict(conn.execute("SELECT key, value FROM meta").fetchall())
         st.caption(f"Datos: {_meta.get('fecha_min','?')} → {_meta.get('fecha_max','?')}")
+        
+        # Mostrar fecha de última actualización
+        built_at = _meta.get('built_at', '?')
+        if built_at != '?':
+            from datetime import datetime
+            try:
+                dt = datetime.fromisoformat(built_at)
+                built_at_fmt = dt.strftime("%d/%m/%Y %H:%M")
+            except:
+                built_at_fmt = built_at
+        else:
+            built_at_fmt = '?'
+        st.caption(f"🔄 Actualizado: {built_at_fmt}")
         cargar = False
     else:
         @st.cache_data(ttl=300)
