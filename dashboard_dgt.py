@@ -11,7 +11,9 @@ Requisitos:
     pip install -r requirements.txt
 """
 
+import re
 import sys
+import unicodedata
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -170,6 +172,16 @@ _TREEMAP_COLORS = [
     "#4dd0e1", "#dce775", "#a1887f", "#90a4ae", "#e57373",
 ]
 
+def _sin_acento(s: str) -> str:
+    return unicodedata.normalize("NFD", s).encode("ascii", "ignore").decode("ascii")
+
+def _limpiar_modelo(marca: str, modelo: str) -> str:
+    marca_norm = _sin_acento(marca.strip()).upper()
+    modelo_norm = _sin_acento(modelo.strip()).upper()
+    pattern = re.compile(r"\b" + re.escape(marca_norm) + r"\b")
+    resultado = re.sub(r"\s+", " ", pattern.sub("", modelo_norm)).strip()
+    return resultado if resultado else modelo_norm
+
 def treemap_chart(serie: pd.Series, titulo: str, top_n: int, preagregado: bool = False) -> go.Figure:
     if preagregado:
         top = serie.head(top_n)
@@ -245,8 +257,9 @@ def pareto_chart(serie: pd.Series, titulo: str, eje_x: str, top_n: int, preagreg
             showscale=False,
         ),
         text=conteo["unidades"].apply(lambda v: f"{v:,}"),
-        textposition="outside",
-        textfont=dict(color=TEXT, size=11),
+        textposition="inside",
+        insidetextanchor="end",
+        textfont=dict(color="white", size=11),
         xaxis="x1",
     ))
 
@@ -272,7 +285,7 @@ def pareto_chart(serie: pd.Series, titulo: str, eje_x: str, top_n: int, preagreg
             zeroline=False,
         ),
         xaxis2=dict(
-            title="% Acumulado",
+            title="",
             overlaying="x",
             side="top",
             range=[0, min(max_pct * 1.08, 108)],
@@ -558,13 +571,19 @@ if CLOUD:
         conn, params=_cm_params,
     )
     _df_mo = pd.read_sql_query(
-        f"SELECT marca || ' ' || modelo AS modelo_completo, SUM(n) AS n "
+        f"SELECT marca, modelo, SUM(n) AS n "
         f"FROM resumen_marca WHERE {_cm_where} AND modelo != '' AND marca != '' "
         "GROUP BY marca, modelo ORDER BY n DESC",
         conn, params=_cm_params,
     )
-    marcas_s  = _df_m.set_index("marca")["n"]             if not _df_m.empty  else pd.Series(dtype=int)
-    modelos_s = _df_mo.set_index("modelo_completo")["n"]  if not _df_mo.empty else pd.Series(dtype=int)
+    marcas_s  = _df_m.set_index("marca")["n"] if not _df_m.empty else pd.Series(dtype=int)
+    if not _df_mo.empty:
+        _df_mo["modelo_completo"] = _df_mo.apply(
+            lambda r: r["marca"] + " " + _limpiar_modelo(r["marca"], r["modelo"]), axis=1
+        )
+        modelos_s = _df_mo.groupby("modelo_completo")["n"].sum().sort_values(ascending=False)
+    else:
+        modelos_s = pd.Series(dtype=int)
 
     if marcas_s.empty:
         st.info("No hay datos para este rango en la DB cloud.")
@@ -725,7 +744,9 @@ with tab1:
     else:
         marcas  = df["MarcaItv"].dropna().replace("", pd.NA).dropna()
         _df_mod = df[["MarcaItv", "ModeloItv"]].dropna().replace("", pd.NA).dropna()
-        modelos = (_df_mod["MarcaItv"] + " " + _df_mod["ModeloItv"])
+        modelos = _df_mod.apply(
+            lambda r: r["MarcaItv"] + " " + _limpiar_modelo(r["MarcaItv"], r["ModeloItv"]), axis=1
+        )
         _preag  = False
 
     col_a, col_b = st.columns(2)
@@ -1339,6 +1360,21 @@ Código en [github.com/literato1987/dgt-matriculaciones](https://github.com/lite
 Microdatos de dominio público disponibles en [dgt.es](https://www.dgt.es).
 
 **Licencia**: MIT — úsalo, fórkalo, mejóralo.
+
+---
+
+#### Changelog
+
+| Versión | Mejora |
+|---------|--------|
+| may-2026 | Etiquetas de barras en Pareto ahora van dentro de la barra (sin truncado) |
+| may-2026 | Eliminado título redundante "% Acumulado" en el eje superior del Pareto |
+| may-2026 | Pareto y Treemap de modelos: eliminada duplicación de la marca en el nombre del modelo (ej. "CITROEN NUEVO CITROEN" → "CITROEN NUEVO C3") |
+| abr-2026 | Treemap comunidades: respeta el filtro de propulsión (BEV / todos / sin EV) |
+| abr-2026 | Evolución BEV% por CCAA cambia de líneas a barras agrupadas para mejor legibilidad |
+| abr-2026 | Pareto modelos muestra "MARCA MODELO" en lugar de solo el modelo |
+| abr-2026 | Pareto acumulado calculado sobre el total real de matriculaciones, no solo el top N |
+| abr-2026 | Treemap agrupa el resto de modelos/marcas en la categoría "Otros" |
 
 ---
 
