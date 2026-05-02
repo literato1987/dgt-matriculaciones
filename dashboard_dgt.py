@@ -221,7 +221,7 @@ def treemap_chart(serie: pd.Series, titulo: str, top_n: int, preagregado: bool =
         title=dict(text=titulo, font=dict(size=14, color=TEXT), x=0.01),
         paper_bgcolor=BG,
         margin=dict(t=50, b=10, l=10, r=10),
-        height=500,
+        height=700,
     )
     return fig
 
@@ -779,27 +779,23 @@ with tab1:
 
     st.divider()
     st.subheader("Distribución por área")
-    col_c, col_d = st.columns(2)
 
-    with col_c:
-        st.caption("Por Marca")
-        if not marcas.empty:
-            st.plotly_chart(treemap_chart(
-                marcas,
-                titulo=f"Marcas · {fecha_txt}{filtro_txt}",
-                top_n=top_marcas,
-                preagregado=_preag,
-            ), use_container_width=True)
+    _TOP_TREEMAP = 70
+    if not marcas.empty:
+        st.plotly_chart(treemap_chart(
+            marcas,
+            titulo=f"Top {_TOP_TREEMAP} marcas · {fecha_txt}{filtro_txt}",
+            top_n=_TOP_TREEMAP,
+            preagregado=_preag,
+        ), use_container_width=True)
 
-    with col_d:
-        st.caption("Por Modelo")
-        if not modelos.empty:
-            st.plotly_chart(treemap_chart(
-                modelos,
-                titulo=f"Modelos · {fecha_txt}{filtro_txt}",
-                top_n=top_modelos,
-                preagregado=_preag,
-            ), use_container_width=True)
+    if not modelos.empty:
+        st.plotly_chart(treemap_chart(
+            modelos,
+            titulo=f"Top {_TOP_TREEMAP} modelos · {fecha_txt}{filtro_txt}",
+            top_n=_TOP_TREEMAP,
+            preagregado=_preag,
+        ), use_container_width=True)
 
     st.divider()
     with st.expander("Desglose por tipo de propulsión (período completo)"):
