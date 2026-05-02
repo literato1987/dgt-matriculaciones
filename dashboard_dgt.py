@@ -172,13 +172,25 @@ _TREEMAP_COLORS = [
 
 def treemap_chart(serie: pd.Series, titulo: str, top_n: int, preagregado: bool = False) -> go.Figure:
     if preagregado:
-        conteo = serie.head(top_n).reset_index()
+        top = serie.head(top_n)
+        otros_val = serie.iloc[top_n:].sum()
+        conteo = top.reset_index()
         conteo.columns = ["categoria", "unidades"]
     else:
-        conteo = serie.value_counts().head(top_n).reset_index()
+        vc = serie.value_counts()
+        top = vc.head(top_n)
+        otros_val = vc.iloc[top_n:].sum()
+        conteo = top.reset_index()
         conteo.columns = ["categoria", "unidades"]
+    if otros_val > 0:
+        conteo = pd.concat(
+            [conteo, pd.DataFrame([{"categoria": "Otros", "unidades": otros_val}])],
+            ignore_index=True,
+        )
     n = len(conteo)
-    colores = [_TREEMAP_COLORS[i % len(_TREEMAP_COLORS)] for i in range(n)]
+    colores = [_TREEMAP_COLORS[i % len(_TREEMAP_COLORS)] for i in range(n - (1 if otros_val > 0 else 0))]
+    if otros_val > 0:
+        colores.append("#555555")
 
     fig = go.Figure(go.Treemap(
         labels=conteo["categoria"].tolist(),
@@ -204,15 +216,18 @@ def treemap_chart(serie: pd.Series, titulo: str, top_n: int, preagregado: bool =
 
 def pareto_chart(serie: pd.Series, titulo: str, eje_x: str, top_n: int, preagregado: bool = False) -> go.Figure:
     if preagregado:
+        total = serie.sum()
         conteo = serie.head(top_n).reset_index()
         conteo.columns = ["categoria", "unidades"]
     else:
-        conteo = serie.value_counts().head(top_n).reset_index()
+        vc = serie.value_counts()
+        total = vc.sum()
+        conteo = vc.head(top_n).reset_index()
         conteo.columns = ["categoria", "unidades"]
-    # Calcular cumsum en orden descendente (Pareto: el mayor acumula primero)
+    # Calcular cumsum sobre el total real (no solo los top_n)
     conteo = conteo.sort_values("unidades", ascending=False).reset_index(drop=True)
-    total = conteo["unidades"].sum()
     conteo["acumulado_pct"] = conteo["unidades"].cumsum() / total * 100
+    max_pct = conteo["acumulado_pct"].max()
     # Invertir para que el mayor quede arriba en el gráfico horizontal
     conteo = conteo.iloc[::-1].reset_index(drop=True)
 
@@ -260,7 +275,7 @@ def pareto_chart(serie: pd.Series, titulo: str, eje_x: str, top_n: int, preagreg
             title="% Acumulado",
             overlaying="x",
             side="top",
-            range=[0, 108],
+            range=[0, min(max_pct * 1.08, 108)],
             showgrid=False,
             ticksuffix="%",
             tickfont=dict(color=LINE),
@@ -560,9 +575,10 @@ if CLOUD:
     modelos_u  = len(modelos_s)
 
     # pct_elec desde resumen_provincia
+    _cond_nuevo = "AND ind_nuevo_usado = 'N'" if solo_nuevos else ""
     _stats_rp = pd.read_sql_query(
         f"SELECT cod_propulsion, SUM(n) AS n FROM resumen_provincia "
-        f"WHERE mes >= ? AND mes <= ? {'AND ind_nuevo_usado = \'N\'' if solo_nuevos else ''} "
+        f"WHERE mes >= ? AND mes <= ? {_cond_nuevo} "
         "GROUP BY cod_propulsion",
         conn, params=[_f_ini, _f_fin],
     )
