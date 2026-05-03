@@ -182,47 +182,86 @@ def _limpiar_modelo(marca: str, modelo: str) -> str:
     resultado = re.sub(r"\s+", " ", pattern.sub("", modelo_norm)).strip()
     return resultado if resultado else modelo_norm
 
-def treemap_chart(serie: pd.Series, titulo: str, top_n: int, preagregado: bool = False) -> go.Figure:
-    if preagregado:
-        top = serie.head(top_n)
-        otros_val = serie.iloc[top_n:].sum()
-        conteo = top.reset_index()
-        conteo.columns = ["categoria", "unidades"]
-    else:
-        vc = serie.value_counts()
-        top = vc.head(top_n)
-        otros_val = vc.iloc[top_n:].sum()
-        conteo = top.reset_index()
-        conteo.columns = ["categoria", "unidades"]
-    if otros_val > 0:
-        conteo = pd.concat(
-            [conteo, pd.DataFrame([{"categoria": "Otros", "unidades": otros_val}])],
-            ignore_index=True,
-        )
-    n = len(conteo)
-    colores = [_TREEMAP_COLORS[i % len(_TREEMAP_COLORS)] for i in range(n - (1 if otros_val > 0 else 0))]
-    if otros_val > 0:
-        colores.append("#555555")
-
-    fig = go.Figure(go.Treemap(
-        labels=conteo["categoria"].tolist(),
-        parents=[""] * n,
-        values=conteo["unidades"].tolist(),
-        marker=dict(
-            colors=colores,
-            line=dict(width=2, color=BG),
-        ),
-        texttemplate="<b>%{label}</b><br>%{value:,}",
-        textfont=dict(size=13, color="white"),
-        hovertemplate="<b>%{label}</b><br>%{value:,} unidades<extra></extra>",
-        tiling=dict(packing="squarify"),
-    ))
-    fig.update_layout(
+def _treemap_layout(titulo: str) -> dict:
+    return dict(
         title=dict(text=titulo, font=dict(size=14, color=TEXT), x=0.01),
         paper_bgcolor=BG,
         margin=dict(t=50, b=10, l=10, r=10),
         height=700,
     )
+
+def treemap_chart(serie: pd.Series, titulo: str, top_n: int, preagregado: bool = False) -> go.Figure:
+    data = serie if preagregado else serie.value_counts()
+    top  = data.head(top_n)
+    rest = data.iloc[top_n:]
+
+    ids     = [f"__t__{k}" for k in top.index]
+    labels  = list(top.index)
+    parents = [""] * len(top)
+    values  = [int(v) for v in top.values]
+    colors  = [_TREEMAP_COLORS[i % len(_TREEMAP_COLORS)] for i in range(len(top))]
+
+    if len(rest) > 0:
+        ids     += ["__otros__"] + [f"__o__{k}" for k in rest.index]
+        labels  += [f"Otros ({len(rest):,})"] + list(rest.index)
+        parents += [""] + ["__otros__"] * len(rest)
+        values  += [int(rest.sum())] + [int(v) for v in rest.values]
+        colors  += ["#555555"] + ["#777777"] * len(rest)
+
+    fig = go.Figure(go.Treemap(
+        ids=ids, labels=labels, parents=parents, values=values,
+        branchvalues="total",
+        maxdepth=1,
+        marker=dict(colors=colors, line=dict(width=2, color=BG)),
+        texttemplate="<b>%{label}</b><br>%{value:,}",
+        textfont=dict(size=13, color="white"),
+        hovertemplate="<b>%{label}</b><br>%{value:,} unidades<extra></extra>",
+        tiling=dict(packing="squarify"),
+        pathbar=dict(visible=True, side="top", thickness=20,
+                     textfont=dict(color=TEXT, size=12)),
+    ))
+    fig.update_layout(**_treemap_layout(titulo))
+    return fig
+
+
+def treemap_marcas_modelos_chart(df_mm: pd.DataFrame, titulo: str, top_n: int) -> go.Figure:
+    """Treemap jerárquico marca→modelo. df_mm: [marca, modelo_limpio, n]."""
+    marca_totals = df_mm.groupby("marca")["n"].sum().sort_values(ascending=False)
+    top_marcas   = marca_totals.head(top_n)
+    rest_marcas  = marca_totals.iloc[top_n:]
+
+    ids, labels, parents, values, colors = [], [], [], [], []
+
+    for i, (marca, total) in enumerate(top_marcas.items()):
+        color = _TREEMAP_COLORS[i % len(_TREEMAP_COLORS)]
+        ids.append(marca); labels.append(marca); parents.append(""); values.append(int(total)); colors.append(color)
+        for _, row in df_mm[df_mm["marca"] == marca].sort_values("n", ascending=False).iterrows():
+            ids.append(f"{marca}::{row['modelo_limpio']}")
+            labels.append(row["modelo_limpio"])
+            parents.append(marca)
+            values.append(int(row["n"]))
+            colors.append(color)
+
+    if len(rest_marcas) > 0:
+        ids.append("__otros__"); labels.append(f"Otros ({len(rest_marcas):,})")
+        parents.append(""); values.append(int(rest_marcas.sum())); colors.append("#555555")
+        for marca, total in rest_marcas.items():
+            ids.append(f"__o__{marca}"); labels.append(marca)
+            parents.append("__otros__"); values.append(int(total)); colors.append("#777777")
+
+    fig = go.Figure(go.Treemap(
+        ids=ids, labels=labels, parents=parents, values=values,
+        branchvalues="total",
+        maxdepth=1,
+        marker=dict(colors=colors, line=dict(width=2, color=BG)),
+        texttemplate="<b>%{label}</b><br>%{value:,}",
+        textfont=dict(size=13, color="white"),
+        hovertemplate="<b>%{label}</b><br>%{value:,} unidades<extra></extra>",
+        tiling=dict(packing="squarify"),
+        pathbar=dict(visible=True, side="top", thickness=20,
+                     textfont=dict(color=TEXT, size=12)),
+    ))
+    fig.update_layout(**_treemap_layout(titulo))
     return fig
 
 
@@ -578,12 +617,15 @@ if CLOUD:
     )
     marcas_s  = _df_m.set_index("marca")["n"] if not _df_m.empty else pd.Series(dtype=int)
     if not _df_mo.empty:
-        _df_mo["modelo_completo"] = _df_mo.apply(
-            lambda r: r["marca"] + " " + _limpiar_modelo(r["marca"], r["modelo"]), axis=1
+        _df_mo["modelo_limpio"] = _df_mo.apply(
+            lambda r: _limpiar_modelo(r["marca"], r["modelo"]), axis=1
         )
+        _df_mo["modelo_completo"] = _df_mo["marca"] + " " + _df_mo["modelo_limpio"]
         modelos_s = _df_mo.groupby("modelo_completo")["n"].sum().sort_values(ascending=False)
+        _df_mm_cloud = _df_mo.groupby(["marca", "modelo_limpio"])["n"].sum().reset_index()
     else:
-        modelos_s = pd.Series(dtype=int)
+        modelos_s    = pd.Series(dtype=int)
+        _df_mm_cloud = pd.DataFrame(columns=["marca", "modelo_limpio", "n"])
 
     if marcas_s.empty:
         st.info("No hay datos para este rango en la DB cloud.")
@@ -741,6 +783,7 @@ with tab1:
         marcas  = marcas_s
         modelos = modelos_s
         _preag  = True
+        _df_mm  = _df_mm_cloud
     else:
         marcas  = df["MarcaItv"].dropna().replace("", pd.NA).dropna()
         _df_mod = df[["MarcaItv", "ModeloItv"]].dropna().replace("", pd.NA).dropna()
@@ -748,6 +791,14 @@ with tab1:
             lambda r: r["MarcaItv"] + " " + _limpiar_modelo(r["MarcaItv"], r["ModeloItv"]), axis=1
         )
         _preag  = False
+        _df_mm  = (
+            _df_mod.copy()
+            .assign(modelo_limpio=lambda d: d.apply(
+                lambda r: _limpiar_modelo(r["MarcaItv"], r["ModeloItv"]), axis=1))
+            .groupby(["MarcaItv", "modelo_limpio"])
+            .size().reset_index(name="n")
+            .rename(columns={"MarcaItv": "marca"})
+        )
 
     col_a, col_b = st.columns(2)
 
@@ -781,18 +832,17 @@ with tab1:
     st.subheader("Distribución por área")
 
     _TOP_TREEMAP = 70
-    if not marcas.empty:
-        st.plotly_chart(treemap_chart(
-            marcas,
-            titulo=f"Top {_TOP_TREEMAP} marcas · {fecha_txt}{filtro_txt}",
+    if not _df_mm.empty:
+        st.plotly_chart(treemap_marcas_modelos_chart(
+            _df_mm,
+            titulo=f"Marcas · {fecha_txt}{filtro_txt}  — clic en una marca para ver sus modelos",
             top_n=_TOP_TREEMAP,
-            preagregado=_preag,
         ), use_container_width=True)
 
     if not modelos.empty:
         st.plotly_chart(treemap_chart(
             modelos,
-            titulo=f"Top {_TOP_TREEMAP} modelos · {fecha_txt}{filtro_txt}",
+            titulo=f"Modelos · {fecha_txt}{filtro_txt}  — clic en 'Otros' para ver el resto",
             top_n=_TOP_TREEMAP,
             preagregado=_preag,
         ), use_container_width=True)
