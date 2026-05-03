@@ -211,7 +211,7 @@ def treemap_chart(serie: pd.Series, titulo: str, top_n: int, preagregado: bool =
     fig = go.Figure(go.Treemap(
         ids=ids, labels=labels, parents=parents, values=values,
         branchvalues="total",
-        maxdepth=1,
+        maxdepth=2,
         marker=dict(colors=colors, line=dict(width=2, color=BG)),
         texttemplate="<b>%{label}</b><br>%{value:,}",
         textfont=dict(size=13, color="white"),
@@ -831,19 +831,20 @@ with tab1:
     st.divider()
     st.subheader("Distribución por área")
 
-    _TOP_TREEMAP = 70
+    _TOP_MARCAS_TM  = 70
+    _TOP_MODELOS_TM = 200
     if not _df_mm.empty:
         st.plotly_chart(treemap_marcas_modelos_chart(
             _df_mm,
             titulo=f"Marcas · {fecha_txt}{filtro_txt}  — clic en una marca para ver sus modelos",
-            top_n=_TOP_TREEMAP,
+            top_n=_TOP_MARCAS_TM,
         ), use_container_width=True)
 
     if not modelos.empty:
         st.plotly_chart(treemap_chart(
             modelos,
             titulo=f"Modelos · {fecha_txt}{filtro_txt}  — clic en 'Otros' para ver el resto",
-            top_n=_TOP_TREEMAP,
+            top_n=_TOP_MODELOS_TM,
             preagregado=_preag,
         ), use_container_width=True)
 
