@@ -190,35 +190,21 @@ def _treemap_layout(titulo: str) -> dict:
         height=700,
     )
 
-def treemap_chart(serie: pd.Series, titulo: str, top_n: int, preagregado: bool = False) -> go.Figure:
-    data = serie if preagregado else serie.value_counts()
-    top  = data.head(top_n)
-    rest = data.iloc[top_n:]
-
-    ids     = [f"__t__{k}" for k in top.index]
-    labels  = list(top.index)
-    parents = [""] * len(top)
-    values  = [int(v) for v in top.values]
-    colors  = [_TREEMAP_COLORS[i % len(_TREEMAP_COLORS)] for i in range(len(top))]
-
-    if len(rest) > 0:
-        ids     += ["__otros__"] + [f"__o__{k}" for k in rest.index]
-        labels  += [f"Otros ({len(rest):,})"] + list(rest.index)
-        parents += [""] + ["__otros__"] * len(rest)
-        values  += [int(rest.sum())] + [int(v) for v in rest.values]
-        colors  += ["#555555"] + ["#777777"] * len(rest)
+def treemap_chart(serie: pd.Series, titulo: str, preagregado: bool = False) -> go.Figure:
+    data   = serie if preagregado else serie.value_counts()
+    labels = list(data.index)
+    values = [int(v) for v in data.values]
+    colors = [_TREEMAP_COLORS[i % len(_TREEMAP_COLORS)] for i in range(len(data))]
 
     fig = go.Figure(go.Treemap(
-        ids=ids, labels=labels, parents=parents, values=values,
+        labels=labels, parents=[""] * len(labels), values=values,
         branchvalues="total",
-        maxdepth=2,
         marker=dict(colors=colors, line=dict(width=2, color=BG)),
         texttemplate="<b>%{label}</b><br>%{value:,}",
         textfont=dict(size=13, color="white"),
         hovertemplate="<b>%{label}</b><br>%{value:,} unidades<extra></extra>",
         tiling=dict(packing="squarify"),
-        pathbar=dict(visible=True, side="top", thickness=20,
-                     textfont=dict(color=TEXT, size=12)),
+        pathbar=dict(visible=False),
     ))
     fig.update_layout(**_treemap_layout(titulo))
     return fig
@@ -831,8 +817,7 @@ with tab1:
     st.divider()
     st.subheader("Distribución por área")
 
-    _TOP_MARCAS_TM  = 70
-    _TOP_MODELOS_TM = 200
+    _TOP_MARCAS_TM = 70
     if not _df_mm.empty:
         st.plotly_chart(treemap_marcas_modelos_chart(
             _df_mm,
@@ -843,8 +828,7 @@ with tab1:
     if not modelos.empty:
         st.plotly_chart(treemap_chart(
             modelos,
-            titulo=f"Modelos · {fecha_txt}{filtro_txt}  — clic en 'Otros' para ver el resto",
-            top_n=_TOP_MODELOS_TM,
+            titulo=f"Modelos · {fecha_txt}{filtro_txt}",
             preagregado=_preag,
         ), use_container_width=True)
 
@@ -1414,6 +1398,7 @@ Microdatos de dominio público disponibles en [dgt.es](https://www.dgt.es).
 
 | Versión | Mejora |
 |---------|--------|
+| may-2026 | Treemap de modelos muestra todos los modelos sin agrupación "Otros" (los menos frecuentes aparecen como cajas pequeñas) |
 | may-2026 | Etiquetas de barras en Pareto ahora van dentro de la barra (sin truncado) |
 | may-2026 | Eliminado título redundante "% Acumulado" en el eje superior del Pareto |
 | may-2026 | Pareto y Treemap de modelos: eliminada duplicación de la marca en el nombre del modelo (ej. "CITROEN NUEVO CITROEN" → "CITROEN NUEVO C3") |
