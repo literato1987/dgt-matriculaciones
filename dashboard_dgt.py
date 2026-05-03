@@ -252,7 +252,7 @@ def treemap_marcas_modelos_chart(df_mm: pd.DataFrame, titulo: str, top_n: int) -
     fig = go.Figure(go.Treemap(
         ids=ids, labels=labels, parents=parents, values=values,
         branchvalues="total",
-        maxdepth=1,
+        maxdepth=2,
         marker=dict(colors=colors, line=dict(width=2, color=BG)),
         texttemplate="<b>%{label}</b><br>%{value:,}",
         textfont=dict(size=13, color="white"),
